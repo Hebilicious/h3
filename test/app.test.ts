@@ -10,7 +10,6 @@ import {
   getUrlPath,
   setHeader,
   send,
-  RawResponse,
   setResponseStatus,
 } from "../src";
 
@@ -281,13 +280,14 @@ describe("app", () => {
     expect(res.header.hello).toBe("world");
   });
 
-  it("can ignore setters with a Raw Response instance", async () => {
+  it("can ignore setters with a Raw Response", async () => {
     app.use(
       "/test/",
       eventHandler((event) => {
         setHeader(event, "hello", "yes");
         setResponseStatus(event, 208, "bye-status");
-        return new RawResponse("valid", {
+        event.context.__sendRaw = true;
+        return new Response("valid", {
           status: 207,
           statusText: "hello-status",
           headers: { hello: "world" },

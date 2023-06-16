@@ -19,7 +19,7 @@ interface InternalData {
 export class H3Event implements Pick<FetchEvent, "respondWith"> {
   "__is_event__" = true;
   node!: NodeEventContext;
-  context: H3EventContext = {};
+  context: H3EventContext = { __sendRaw: false };
   request!: Request;
   _internalData: InternalData = {
     headers: new Map(),

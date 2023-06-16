@@ -13,7 +13,6 @@ import {
   getRequestURL,
   getUrlPath,
   sendResponse,
-  sendResponseRaw,
 } from "../src";
 
 describe("", () => {
@@ -36,7 +35,10 @@ describe("", () => {
 
     it("can send a RawResponse", async () => {
       app.use(
-        eventHandler((event) => sendResponseRaw(event, new Response("Raw")))
+        eventHandler((event) => {
+          event.context.__sendRaw = true;
+          return sendResponse(event, new Response("Raw"));
+        })
       );
       const result = await request.get("/");
       expect(result.text).toBe("Raw");

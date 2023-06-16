@@ -11,6 +11,7 @@ import {
   removeResponseHeaders,
   setHeaders,
   setHeader,
+  setResponseHeaders,
 } from "./headers";
 
 export function getResponseStatus(event: H3Event): number {
@@ -74,23 +75,7 @@ export function send(event: H3Event, data?: any, type?: string) {
   return endNode(event, data);
 }
 
-export class RawResponse extends Response {}
-/**
- * Ignores all previously called setter methods, and send a raw Response.
- * @param event
- * @param response
- * @returns
- */
-export async function sendResponseRaw(event: H3Event, response: Response) {
-  if (event.request) {
-    return response;
-  }
-  removeResponseHeaders(event);
-  setHeaders(event, Object.fromEntries(response.headers.entries()));
-  setResponseStatus(event, response.status, response.statusText);
-  if (response.redirected) {
-    setHeader(event, "location", response.url);
-  }
+async function writeResponseWithNode(event: H3Event, response: Response) {
   if (response.body) {
     const contentType = response.headers.get("Content-Type") || "";
     if (contentType.includes("text") || contentType.includes("json")) {
@@ -114,6 +99,17 @@ export async function sendResponseRaw(event: H3Event, response: Response) {
  * @returns
  */
 export function sendResponse(event: H3Event, response: Response) {
+  if (event.context.__sendRaw === true) {
+    console.log("Raw response detected");
+    if (event.request) {
+      return response;
+    }
+    removeResponseHeaders(event);
+    setResponseStatus(event, response.status, response.statusText);
+    setResponseHeaders(event, Object.fromEntries(response.headers.entries()));
+    return writeResponseWithNode(event, response);
+  }
+  // Merge status and headers
   const status =
     getResponseStatus(event) !== 200 // 200 is the default.
       ? getResponseStatus(event)
@@ -124,15 +120,24 @@ export function sendResponse(event: H3Event, response: Response) {
     ...Object.fromEntries(response.headers.entries()),
     ...storedHeaders,
   };
-  return sendResponseRaw(
-    event,
-    new Response(response.body, {
-      ...response,
-      status,
-      statusText,
-      headers: mergedHeaders as HeadersInit,
-    })
-  );
+  const mergedResponse = new Response(response.body, {
+    ...response,
+    status,
+    statusText,
+    headers: mergedHeaders as HeadersInit,
+  });
+
+  if (event.request) {
+    return mergedResponse;
+  }
+
+  // Set status and headers and write response
+  setHeaders(event, Object.fromEntries(mergedResponse.headers.entries()));
+  setResponseStatus(event, mergedResponse.status, mergedResponse.statusText);
+  if (mergedResponse.redirected) {
+    setHeader(event, "location", response.url);
+  }
+  return writeResponseWithNode(event, mergedResponse);
 }
 
 /**
