@@ -23,7 +23,7 @@ export function removeResponseHeader(event: H3Event, name: string): void {
 export function getRequestHeaders(event: H3Event): RequestHeaders {
   const _headers: RequestHeaders = {};
   if (event.request) {
-    for (const key in event.request.headers) {
+    for (const [key] of event.request.headers.entries()) {
       const val = event.request.headers.get(key);
       if (val) {
         _headers[key] = Array.isArray(val)
