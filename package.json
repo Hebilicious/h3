@@ -1,8 +1,8 @@
 {
-  "name": "h3",
-  "version": "1.6.6",
-  "description": "Tiny JavaScript Server",
-  "repository": "unjs/h3",
+  "name": "@hebilicious/h3",
+  "version": "0.0.1",
+  "description": "Fork of unjs/h3",
+  "repository": "Hebilicious/h3",
   "license": "MIT",
   "sideEffects": false,
   "exports": {
@@ -25,6 +25,7 @@
     "lint": "eslint --cache --ext .ts,.js,.mjs,.cjs . && prettier -c src test playground",
     "lint:fix": "eslint --cache --ext .ts,.js,.mjs,.cjs . --fix && prettier -c src test playground -w",
     "play": "jiti ./playground/index.ts",
+    "script": "jiti ./playground/script.ts",
     "profile": "0x -o -D .profile -P 'autocannon -c 100 -p 10 -d 40 http://localhost:$PORT' ./playground/server.cjs",
     "release": "pnpm test && pnpm build && changelogen --release && pnpm publish && git push --follow-tags",
     "test": "pnpm lint && NODE_OPTIONS=--experimental-vm-modules vitest --coverage"
