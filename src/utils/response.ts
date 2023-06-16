@@ -83,7 +83,7 @@ export class RawResponse extends Response {}
  */
 export async function sendResponseRaw(event: H3Event, response: Response) {
   if (event.request) {
-    return new RawResponse(response.body, { ...response });
+    return response;
   }
   removeResponseHeaders(event);
   setHeaders(event, Object.fromEntries(response.headers.entries()));
